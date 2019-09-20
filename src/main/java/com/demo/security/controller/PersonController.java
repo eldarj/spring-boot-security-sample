@@ -18,4 +18,12 @@ public class PersonController {
 
         return persons;
     }
+
+    @GetMapping("/persons")
+    public List<Person> findAllNonApi() {
+        return new ArrayList<Person>() {{
+            add(new Person("Slaven", "Sostojic"));
+            add(new Person("Vojo", "Kovanusic"));
+        }};
+    }
 }

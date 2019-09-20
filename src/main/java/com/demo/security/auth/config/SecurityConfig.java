@@ -7,7 +7,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 @Configuration
@@ -15,6 +17,7 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final AbstractUserDetailsAuthenticationProvider authProvider;
     private final RequestMatcher requestMatcher = AnyRequestMatcher.INSTANCE;
+    private final RequestMatcher partialForbidden = new OrRequestMatcher(new AntPathRequestMatcher("/api/**"));
 
     public SecurityConfig(AbstractUserDetailsAuthenticationProvider authProvider) {
         super();
@@ -28,13 +31,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        TokenAuthenticationFilter authFilter = new TokenAuthenticationFilter(requestMatcher);
+        TokenAuthenticationFilter authFilter = new TokenAuthenticationFilter(partialForbidden);
         authFilter.setAuthenticationManager(authenticationManager());
 
         http.authenticationProvider(authProvider)
                 .addFilterBefore(authFilter, AnonymousAuthenticationFilter.class)
                 .authorizeRequests()
-                .requestMatchers(requestMatcher)
+                .requestMatchers(partialForbidden)
                 .authenticated()
                 .and()
                 .csrf().disable()
